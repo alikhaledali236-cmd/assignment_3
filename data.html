@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>People Table</title>
+<style>
+  :root { --ink:#1d2433; --muted:#5b6578; --line:#d5dbe8; --bg:#eef2f8; --accent:#1f5fbf; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 16px; background:var(--bg); color:var(--ink); font-family:"Segoe UI", system-ui, sans-serif; }
+  main { max-width:760px; margin:0 auto; }
+  h1 { margin:0 0 16px; font-size:1.5rem; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  input[type="search"] { flex:1 1 220px; padding:10px 12px; font-size:1rem; border:1.5px solid var(--line); border-radius:6px; font-family:inherit; }
+  input:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  button { padding:10px 16px; font-size:.95rem; font-weight:600; border:1.5px solid var(--accent); background:#fff; color:var(--accent); border-radius:6px; cursor:pointer; }
+  button:hover, button.active { background:var(--accent); color:#fff; }
+  .table-wrap { overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); }
+  th { background:#f6f8fc; }
+  tbody tr:last-child td { border-bottom:0; }
+  tbody tr:hover { background:#f3f7ff; }
+  .count { color:var(--muted); font-size:.9rem; margin:10px 2px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>People directory</h1>
+
+  <div class="controls">
+    <input type="search" id="search" placeholder="Search by name, age, or city" aria-label="Search people">
+    <button type="button" id="sortName">Sort by name</button>
+    <button type="button" id="sortAge">Sort by age</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Age</th><th>City</th></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <p class="count" id="count"></p>
+</main>
+
+<script>
+  // Array of objects
+  const people = [
+    { name: "Ahmed Hassan",  age: 28, city: "Cairo" },
+    { name: "Sara Mahmoud",  age: 22, city: "Alexandria" },
+    { name: "Omar Khaled",   age: 35, city: "Giza" },
+    { name: "Mona Ibrahim",  age: 41, city: "Aswan" },
+    { name: "Youssef Adel",  age: 19, city: "Cairo" },
+    { name: "Nour Samir",    age: 30, city: "Luxor" },
+    { name: "Laila Tarek",   age: 26, city: "Mansoura" },
+    { name: "Karim Fathy",   age: 33, city: "Alexandria" },
+    { name: "Hana Mostafa",  age: 24, city: "Giza" },
+    { name: "Mahmoud Salah", age: 38, city: "Tanta" }
+  ];
+
+  let sortBy = null; // "name" | "age" | null
+  const body = document.getElementById("tableBody");
+  const searchBox = document.getElementById("search");
+
+  function getVisible() {
+    const q = searchBox.value.trim().toLowerCase();
+    let rows = people.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      String(p.age).includes(q) ||
+      p.city.toLowerCase().includes(q)
+    );
+    if (sortBy === "name") rows.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === "age")  rows.sort((a, b) => a.age - b.age);
+    return rows;
+  }
+
+  // Build table rows with JavaScript
+  function render() {
+    const rows = getVisible();
+    body.innerHTML = "";
+    if (rows.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 3;
+      td.textContent = "No results. Try a different search.";
+      tr.appendChild(td);
+      body.appendChild(tr);
+    }
+    rows.forEach(p => {
+      const tr = document.createElement("tr");
+      [p.name, p.age, p.city].forEach(value => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+    document.getElementById("count").textContent =
+      "Showing " + rows.length + " of " + people.length + " people";
+    document.getElementById("sortName").classList.toggle("active", sortBy === "name");
+    document.getElementById("sortAge").classList.toggle("active", sortBy === "age");
+  }
+
+  searchBox.addEventListener("input", render); // filters while typing
+  document.getElementById("sortName").addEventListener("click", () => { sortBy = "name"; render(); });
+  document.getElementById("sortAge").addEventListener("click",  () => { sortBy = "age";  render(); });
+
+  render();
+</script>
+</body>
+</html>
